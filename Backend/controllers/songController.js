@@ -139,8 +139,8 @@ const addSong = async (req, res) => {
 
         const { title, artist, album, genre } = req.body;
 
-        if (!req.files || !req.files.audioFile) {
-            return res.status(400).json({ message: 'Please upload an audio file' });
+        if (!req.files) { 
+            return res.status(400).json({ message: 'Please upload an audio file'  });
         }
 
         const audioFile = req.files.audioFile[0];
