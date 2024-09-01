@@ -1,0 +1,506 @@
+after i wrote import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface Song {
+  _id: string;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  genre: string;
+  albumPhotoUrl: string;
+  createdAt: string;
+  isFavorite?: boolean;
+}
+
+interface GenreStat {
+  _id: string;
+  count: number;
+}
+
+interface ArtistStat {
+  _id: string;
+  songCount: number;
+  albums: string[];
+}
+
+interface Stats {
+  totalSongs: number;
+  totalArtists: number;
+  totalAlbums: number;
+  totalGenres: number;
+  genreStats: GenreStat[];
+  artistStats: ArtistStat[];
+}
+
+interface SongsState {
+  songs: Song[];
+  stats: Stats | null;
+  loading: boolean;
+  error: string | null;
+  currentPlayMusic: Song | null;
+  showAddSong: boolean;
+}
+
+const initialState: SongsState = {
+  songs: [],
+  stats: null,
+  loading: false,
+  error: null,
+  currentPlayMusic: null,
+  showAddSong: false,
+};
+
+const songsSlice = createSlice({
+  name: 'songs',
+  initialState,
+  reducers: {
+    fetchSongsRequest(state) {
+      state.loading = true;
+    },
+    fetchSongsSuccess(state, action: PayloadAction<Song[]>) {
+      state.songs = action.payload;
+      state.loading = false;
+    },
+    fetchSongsFailure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.loading = false;
+    },
+    fetchStatsRequest(state) {
+      state.loading = true;
+    },
+    fetchStatsSuccess(state, action: PayloadAction<Stats>) {
+      state.stats = action.payload;
+      state.loading = false;
+    },
+    fetchStatsFailure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.loading = false;
+    },
+    addSongRequest(state, action: PayloadAction<FormData>) {
+      state.loading = true;
+    },
+    addSongSuccess(state, action: PayloadAction<Song>) {
+      state.songs.unshift(action.payload);
+      state.loading = false;
+    },
+    updateSongRequest(state, action: PayloadAction<Song>) {
+      state.loading = true;
+    },
+    updateSongSuccess(state, action: PayloadAction<Song>) {
+      const index = state.songs.findIndex((song) => song._id === action.payload._id);
+      if (index !== -1) {
+        state.songs[index] = action.payload;
+      }
+      state.loading = false;
+    },
+    deleteSongRequest(state, action: PayloadAction<string>) {
+      state.loading = true;
+    },
+    deleteSongSuccess(state, action: PayloadAction<string>) {
+      state.songs = state.songs.filter((song) => song._id !== action.payload);
+      state.loading = false;
+    },
+    toggleFavoriteRequest(state, action: PayloadAction<{ id: string; isFavorite: boolean }>) {
+      state.loading = true;
+    },
+    toggleFavoriteSuccess(state, action: PayloadAction<Song>) {
+      const index = state.songs.findIndex((song) => song._id === action.payload._id);
+      if (index !== -1) {
+        state.songs[index] = action.payload;
+      }
+      state.loading = false;
+    },
+    failure(state, action: PayloadAction<string>) {
+      state.error = action.payload;
+      state.loading = false;
+    },
+    setCurrentPlayMusic(state, action: PayloadAction<Song>) {
+      state.currentPlayMusic = action.payload;
+    },
+    toggleShowAddSong(state) {
+      state.showAddSong = !state.showAddSong;
+    },
+  },
+});
+
+export const {
+  fetchSongsRequest,
+  fetchSongsSuccess,
+  fetchSongsFailure,
+  fetchStatsRequest,
+  fetchStatsSuccess,
+  fetchStatsFailure,
+  addSongRequest,
+  addSongSuccess,
+  updateSongRequest,
+  updateSongSuccess,
+  deleteSongRequest,
+  deleteSongSuccess,
+  toggleFavoriteRequest,
+  toggleFavoriteSuccess,
+  failure,
+  setCurrentPlayMusic,
+  toggleShowAddSong,
+} = songsSlice.actions;
+
+export default songsSlice.reducer;
+and import { call, put, takeEvery, CallEffect, PutEffect } from 'redux-saga/effects';
+import axios, { AxiosResponse } from 'axios';
+import {
+  fetchSongsRequest,
+  fetchSongsSuccess,
+  fetchSongsFailure,
+  fetchStatsRequest,
+  fetchStatsSuccess,
+  fetchStatsFailure,
+  addSongRequest,
+  addSongSuccess,
+  updateSongRequest,
+  updateSongSuccess,
+  deleteSongRequest,
+  deleteSongSuccess,
+  toggleFavoriteRequest,
+  toggleFavoriteSuccess,
+  failure,
+} from './songsSlice';
+
+interface Song {
+  _id: string;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  genre: string;
+  albumPhotoUrl: string;
+  createdAt: string;
+}
+interface GenreStat {
+  _id: string;
+  count: number;
+}
+
+interface ArtistStat {
+  _id: string;
+  songCount: number;
+  albums: string[];
+}
+
+interface Stats {
+  totalSongs: number;
+  totalArtists: number;
+  totalAlbums: number;
+  totalGenres: number;
+  genreStats: GenreStat[];
+  artistStats: ArtistStat[];
+}
+
+type FetchSongsResponse = Song[];
+type FetchStatsResponse = Stats;
+type AddSongResponse = Song;
+interface UpdateSongResponse {
+  data: Song;
+}
+
+const API_BASE_URL = 'http://localhost:5000';
+
+function* fetchSongs(): Generator<
+  CallEffect | PutEffect<{ type: string; payload: any }>,
+  void,
+  AxiosResponse<FetchSongsResponse>
+> {
+  try {
+    const response: AxiosResponse<FetchSongsResponse> = yield call(axios.get, ${API_BASE_URL}/api/songs);
+    yield put(fetchSongsSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(fetchSongsFailure(error.message));
+    } else if (error instanceof Error) {
+      yield put(fetchSongsFailure(error.message));
+    } else {
+      yield put(fetchSongsFailure('An unexpected error occurred'));
+    }
+  }
+}
+
+function* fetchStats(): Generator<
+  CallEffect | PutEffect<{ type: string; payload: any }>,
+  void,
+  AxiosResponse<FetchStatsResponse>
+> {
+  try {
+    const response: AxiosResponse<FetchStatsResponse> = yield call(axios.get, ${API_BASE_URL}/status);
+    yield put(fetchStatsSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(fetchStatsFailure(error.message));
+    } else if (error instanceof Error) {
+      yield put(fetchStatsFailure(error.message));
+    } else {
+      yield put(fetchStatsFailure('An unexpected error occurred'));
+    }
+  }
+}
+
+function* addSong(
+  action: ReturnType<typeof addSongRequest>
+): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, AxiosResponse<AddSongResponse>> {
+  try {
+    const formData = action.payload as FormData;
+    const response: AxiosResponse<AddSongResponse> = yield call(axios.post, ${API_BASE_URL}/api/songs, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    yield put(addSongSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(failure(error.message));
+    } else if (error instanceof Error) {
+      yield put(failure(error.message));
+    } else {
+      yield put(failure('An unexpected error occurred'));
+    }
+  }
+}
+
+function* updateSong(
+  action: ReturnType<typeof updateSongRequest>
+): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, AxiosResponse<UpdateSongResponse>> {
+  try {
+    const song = action.payload as Song;
+    const response: AxiosResponse<UpdateSongResponse> = yield call(
+      axios.put,
+      ${API_BASE_URL}/api/songs/${song._id},
+      song,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    yield put(updateSongSuccess(response.data.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(failure(error.message));
+    } else if (error instanceof Error) {
+      yield put(failure(error.message));
+    } else {
+      yield put(failure('An unexpected error occurred'));
+    }
+  }
+}
+
+function* deleteSong(
+  action: ReturnType<typeof deleteSongRequest>
+): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, void> {
+  try {
+    yield call(axios.delete, ${API_BASE_URL}/api/songs/${action.payload});
+    yield put(deleteSongSuccess(action.payload));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(failure(error.message));
+    } else if (error instanceof Error) {
+      yield put(failure(error.message));
+    } else {
+      yield put(failure('An unexpected error occurred'));
+    }
+  }
+}
+
+function* toggleFavorite(
+  action: ReturnType<typeof toggleFavoriteRequest>
+): Generator<any, void, AxiosResponse<Song>> {
+  try {
+    const { id, isFavorite } = action.payload;
+    const response: AxiosResponse<Song> = yield call(axios.put, ${API_BASE_URL}/api/songs/${id}/favorite, {
+      isFavorite,
+    });
+    yield put(toggleFavoriteSuccess(response.data));
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      yield put(failure(error.message));
+    } else if (error instanceof Error) {
+      yield put(failure(error.message));
+    } else {
+      yield put(failure('An unexpected error occurred'));
+    }
+  }
+}
+
+export default function* songsSaga() {
+  yield takeEvery(fetchSongsRequest.type, fetchSongs);
+  yield takeEvery(fetchStatsRequest.type, fetchStats);
+  yield takeEvery(addSongRequest.type, addSong);
+  yield takeEvery(updateSongRequest.type, updateSong);
+  yield takeEvery(deleteSongRequest.type, deleteSong);
+  yield takeEvery(toggleFavoriteRequest.type, toggleFavorite);
+}
+   the i want fetchstats very attractivly inside import React, { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchSongsRequest, setCurrentPlayMusic } from '../features/songs/songsSlice';
+import { RootState } from '../store';
+import styled from '@emotion/styled';
+
+interface Song {
+  _id: string;
+  title: string;
+  artist: string;
+  audioUrl: string;
+  genre: string;
+  albumPhotoUrl: string;
+  createdAt: string;
+  isFavorite?: boolean;
+}
+
+interface SongListProps {
+  searchQuery: string;
+  showLikedSongs: boolean;
+}
+
+const Container = styled.div
+  background-color: #181818;
+  color: white;
+  padding: 20px;
+;
+
+const Banner = styled.div
+  position: relative;
+  background: url('music2.jpg') center center / cover no-repeat;
+  height: 300px;
+  display: flex;
+  align-items: flex-end;
+  padding: 20px;
+  border-radius: 10px;
+  margin-bottom: 30px;
+;
+
+const BannerText = styled.div
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+;
+
+const MostPlayedSection = styled.div
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+;
+
+const SectionTitle = styled.h2
+  font-size: 20px;
+  font-weight: bold;
+;
+
+const ViewAll = styled.button
+  background: none;
+  border: none;
+  color: #1db954;
+  cursor: pointer;
+  font-size: 14px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+;
+
+const SongsContainer = styled.div
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding-bottom: 10px;
+;
+
+const SongCard = styled.div
+  flex: 1 1 calc(15% - 20px);
+  background-color: #282828;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+;
+
+const AlbumImage = styled.img
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+;
+
+const SongDetails = styled.div
+  padding: 10px;
+;
+
+const SongTitle = styled.h3
+  font-size: 14px;
+  font-weight: bold;
+  margin: 0;
+  color: #ffffff;
+;
+
+const Artist = styled.p
+  font-size: 12px;
+  margin: 5px 0 0;
+  color: #b3b3b3;
+;
+
+const SongList: React.FC<SongListProps> = ({ searchQuery, showLikedSongs }) => {
+  const dispatch = useDispatch();
+  const { songs, loading, error } = useSelector((state: RootState) => state.songs);
+  const [viewAll, setViewAll] = useState(false);
+
+  useEffect(() => {
+    dispatch(fetchSongsRequest());
+  }, [dispatch]);
+
+  const filteredSongs = songs
+    .filter(song => song.title.toLowerCase().includes(searchQuery.toLowerCase()))
+    .filter(song => (showLikedSongs ? song.isFavorite : true));
+
+  const songsToShow = viewAll ? filteredSongs : filteredSongs.slice(0, 4);
+
+  const handleSongClick = (song: Song) => {
+    dispatch(setCurrentPlayMusic(song));
+  };
+
+  const toggleViewAll = () => {
+    setViewAll((prevViewAll) => !prevViewAll);
+  };
+
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error}</p>;
+
+  return (
+    <Container>
+      <Banner>
+        <BannerText>
+          Happier Than Ever <br />
+          Simon Tamene
+        </BannerText>
+      </Banner>
+
+      <MostPlayedSection>
+        <SectionTitle>{showLikedSongs ? 'Liked Songs' : 'Most Played'}</SectionTitle>
+        <ViewAll onClick={toggleViewAll}>
+          {viewAll ? 'View less' : 'View all'}
+        </ViewAll>
+      </MostPlayedSection>
+
+      <SongsContainer>
+        {songsToShow.map((song) => (
+          <SongCard key={song._id} onClick={() => handleSongClick(song)}>
+            <AlbumImage src={http://localhost:5000${song.albumPhotoUrl}} alt={song.title} />
+            <SongDetails>
+              <SongTitle>{song.title}</SongTitle>
+              <Artist>{song.artist}</Artist>
+            </SongDetails>
+          </SongCard>
+        ))}
+      </SongsContainer>
+    </Container>
+  );
+};
+
+export default SongList;
+below the banner above the song list
