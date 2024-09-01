@@ -53,7 +53,7 @@ type FetchStatsResponse = Stats;
 type AddSongResponse = Song;
 type UpdateSongResponse = Song;
 
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = 'https://simon-music-player-backend.vercel.app';
 
 function* fetchSongs(): Generator<
   CallEffect | PutEffect<{ type: string; payload: any }>,

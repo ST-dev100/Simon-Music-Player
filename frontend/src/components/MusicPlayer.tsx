@@ -116,7 +116,7 @@ const MusicPlayer: React.FC = () => {
       {currentPlayMusic && (
         <>
           <img
-            src={`http://localhost:5000${currentPlayMusic.albumPhotoUrl}`}
+            src={`https://simon-music-player-backend.vercel.app${currentPlayMusic.albumPhotoUrl}`}
             alt={`${currentPlayMusic.title} Album Cover`}
             className="w-12 h-12 object-cover rounded-lg"
           />
@@ -137,7 +137,7 @@ const MusicPlayer: React.FC = () => {
       {currentPlayMusic && (
         <audio
           ref={audioRef}
-          src={`http://localhost:5000${currentPlayMusic.audioUrl}`}
+          src={`https://simon-music-player-backend.vercel.app${currentPlayMusic.audioUrl}`}
           onTimeUpdate={handleTimeUpdate}
         />
       )}

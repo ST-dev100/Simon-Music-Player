@@ -237,7 +237,7 @@ const SongList: React.FC<SongListProps> = ({ searchQuery, showLikedSongs }) => {
       <SongsContainer>
         {songsToShow.map((song) => (
           <SongCard key={song._id} onClick={() => handleSongClick(song)}>
-            <AlbumImage src={`http://localhost:5000${song.albumPhotoUrl}`} alt={song.title} />
+            <AlbumImage src={`https://simon-music-player-backend.vercel.app/${song.albumPhotoUrl}`} alt={song.title} />
             <SongDetails>
               <SongTitle>{song.title}</SongTitle>
               <Artist>{song.artist}</Artist>
