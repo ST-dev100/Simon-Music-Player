@@ -1,50 +1,55 @@
 const path = require('path');
 const multer = require('multer');
+const cloudinary = require('../config/config')
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 const fs = require('fs');
 const Song = require('../models/Song');
 
-// Multer configuration
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        if (file.fieldname === 'imageFile') {
-            cb(null, 'uploads/albumPhoto');
-        } else if (file.fieldname === 'audioFile') {
-            cb(null, 'uploads/audio');
+// Configure Cloudinary storage
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: async (req, file) => {
+        let folderName;
+        let resourceType;
+
+        // Determine the folder and resource type based on the file fieldname
+        if (file.fieldname === 'audioFile') {
+            folderName = 'audioFiles';
+            resourceType = 'video'; // Use 'video' resource type for audio files in Cloudinary
+        } else if (file.fieldname === 'imageFile') {
+            folderName = 'albumPhotos';
+            resourceType = 'image';
         } else {
-            cb(new Error('Invalid field name'), null);
+            throw new Error('Invalid field name');
         }
+
+        // Construct file name and set parameters
+        return {
+            folder: folderName,
+            public_id: `${file.originalname.split('.')[0]}-${new Date().toISOString().split('T')[0]}`,
+            resource_type: resourceType,
+        };
     },
-    filename: function (req, file, cb) {
-        // Get current date in YYYY-MM-DD format
-        const currentDate = new Date().toISOString().split('T')[0];
-        // Extract original file name and extension
-        const originalName = path.basename(file.originalname, path.extname(file.originalname));
-        const extension = path.extname(file.originalname);
-        // Construct new file name
-        const newFilename = `${originalName}-${currentDate}${extension}`;
-        cb(null, newFilename);
-    }
 });
 
-// Create multer instance with custom storage
+// Create multer instance with Cloudinary storage
 const upload = multer({ storage: storage });
 
-// @desc    Get all songs
-// @route   GET /api/songs
-// @access  Public
+// @desc Get all songs
+// @route GET /api/songs
+// @access Public
 const getSongs = async (req, res) => {
     try {
-        const songs = await Song.find().sort({ createdAt: -1 }); // Sort by createdAt in descending order
-        res.status(200).json(songs); // Respond with the list of songs
+        const songs = await Song.find().sort({ createdAt: -1 });
+        res.status(200).json(songs);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
-
-// @desc    Update a song
-// @route   PUT /api/songs/:id
-// @access  Public
+// @desc Update a song
+// @route PUT /api/songs/:id
+// @access Public
 const updateSong = async (req, res) => {
     upload.fields([{ name: 'imageFile' }, { name: 'audioFile' }])(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
@@ -58,56 +63,27 @@ const updateSong = async (req, res) => {
 
         try {
             const song = await Song.findById(id);
-
             if (!song) {
                 return res.status(404).json({ message: 'Song not found' });
             }
-            console.log(req.files)
+
             // Update song fields
             song.title = title || song.title;
             song.artist = artist || song.artist;
             song.album = album || song.album;
             song.genre = genre || song.genre;
-
-            // Update createdAt field to the current time (if needed)
-            song.createdAt = new Date(); // Update to the current time
+            song.createdAt = new Date(); // Update the timestamp
 
             // Handle image file replacement if a new one is uploaded
             if (req.files && req.files.imageFile) {
                 const imageFile = req.files.imageFile[0];
-                const albumPhotoUrl = `/uploads/albumPhoto/${imageFile.filename}`;
-
-                // Remove the old album photo if it exists
-                if (song.albumPhotoUrl) {
-                    const oldImagePath = path.join(__dirname, '..', song.albumPhotoUrl);
-                    fs.unlink(oldImagePath, (err) => {
-                        if (err) {
-                            console.error(`Failed to delete old image: ${oldImagePath}`, err);
-                        }
-                    });
-                }
-
-                // Update the albumPhotoUrl with the new file path
-                song.albumPhotoUrl = albumPhotoUrl;
+                song.albumPhotoUrl = imageFile.path; // Update Cloudinary URL
             }
 
             // Handle audio file replacement if a new one is uploaded
-            if (req.files && req.files.audioFiles) {
-                const audioFile = req.files.audioFiles[0];
-                const audioUrl = `/uploads/audio/${audioFile.filename}`;
-
-                // Remove the old audio file if it exists
-                if (song.audioUrl) {
-                    const oldAudioPath = path.join(__dirname, '..', song.audioUrl);
-                    fs.unlink(oldAudioPath, (err) => {
-                        if (err) {
-                            console.error(`Failed to delete old audio: ${oldAudioPath}`, err);
-                        }
-                    });
-                }
-
-                // Update the audioUrl with the new file path
-                song.audioUrl = audioUrl;
+            if (req.files && req.files.audioFile) {
+                const audioFile = req.files.audioFile[0];
+                song.audioUrl = audioFile.path; // Update Cloudinary URL
             }
 
             await song.save(); // Save the updated song
@@ -118,47 +94,41 @@ const updateSong = async (req, res) => {
     });
 };
 
-
-// @desc    Delete a song
-// @route   DELETE /api/songs/:id
-// @access  Public
+// @desc Delete a song
+// @route DELETE /api/songs/:id
+// @access Public
 const deleteSong = async (req, res) => {
     const { id } = req.params;
 
     try {
         const song = await Song.findById(id);
-
         if (!song) {
             return res.status(404).json({ message: 'Song not found' });
         }
 
-        const audioPath = path.join(__dirname, '..', song.audioUrl); // Resolve the full path to the audio file
-        const albumPhotoPath = path.join(__dirname, '..', song.albumPhotoUrl); // Resolve the full path to the album photo
+        // Delete the audio file from Cloudinary
+        if (song.audioUrl) {
+            const audioPublicId = song.audioUrl.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(audioPublicId, { resource_type: 'video' });
+        }
 
-        // Delete the audio file from the filesystem
-        fs.unlink(audioPath, (err) => {
-            if (err) {
-                console.log({ message: 'Failed to delete audio file', error: err.message });
-            }
+        // Delete the album photo from Cloudinary
+        if (song.albumPhotoUrl) {
+            const imagePublicId = song.albumPhotoUrl.split('/').pop().split('.')[0];
+            await cloudinary.uploader.destroy(imagePublicId, { resource_type: 'image' });
+        }
 
-            // Delete the album photo from the filesystem
-            fs.unlink(albumPhotoPath, async (err) => {
-                if (err) {
-                    console.log({ message: 'Failed to delete album photo', error: err.message });
-                }
-
-                await Song.deleteOne({ _id: id }); // Remove the song from the database
-                res.status(200).json({ message: 'Song and associated files removed' });
-            });
-        });
+        // Remove the song from the database
+        await Song.deleteOne({ _id: id });
+        res.status(200).json({ message: 'Song and associated files removed' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error: error.message });
     }
 };
 
-// @desc    Create a new song
-// @route   POST /api/songs
-// @access  Public
+// @desc Create a new song
+// @route POST /api/songs
+// @access Public
 const addSong = async (req, res) => {
     upload.fields([{ name: 'imageFile' }, { name: 'audioFile' }])(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
@@ -174,12 +144,12 @@ const addSong = async (req, res) => {
         }
 
         const audioFile = req.files.audioFile[0];
-        const audioUrl = `/uploads/audio/${audioFile.filename}`; // Path to the uploaded audio file
+        const audioUrl = audioFile.path; // Cloudinary URL for the uploaded audio file
         let albumPhotoUrl = '';
 
         if (req.files.imageFile) {
             const imageFile = req.files.imageFile[0];
-            albumPhotoUrl = `/uploads/albumPhoto/${imageFile.filename}`; // Path to the uploaded image file
+            albumPhotoUrl = imageFile.path; // Cloudinary URL for the uploaded image file
         }
 
         try {
@@ -189,7 +159,7 @@ const addSong = async (req, res) => {
                 album,
                 genre,
                 audioUrl,
-                albumPhotoUrl, // Save the album photo URL
+                albumPhotoUrl,
             });
 
             await song.save();
@@ -200,14 +170,13 @@ const addSong = async (req, res) => {
     });
 };
 
-
-// @desc    Get statistics about songs
-// @route   GET /api/songs/stats
-// @access  Public
+// @desc Get statistics about songs
+// @route GET /api/songs/stats
+// @access Public
 const getStats = async (req, res) => {
     try {
         const totalSongs = await Song.countDocuments();
-        
+
         // Count distinct artists, albums, and genres
         const distinctArtists = await Song.distinct('artist');
         const distinctAlbums = await Song.distinct('album');
@@ -240,7 +209,6 @@ const getStats = async (req, res) => {
     }
 };
 
-
 // Toggle the `isFavorite` status of a song by its _id
 const toggleFavorite = async (req, res) => {
     try {
@@ -267,3 +235,4 @@ module.exports = {
     getStats,
     toggleFavorite
 };
+

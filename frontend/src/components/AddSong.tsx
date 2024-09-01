@@ -39,8 +39,8 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
       setArtist(selectedSong.artist);
       setAlbum(selectedSong.album);
       setGenre(selectedSong.genre);
-      setAudioPreview(`https://simon-music-player-backend.vercel.app${selectedSong.audioUrl}`);
-      setImagePreview(`https://simon-music-player-backend.vercel.app${selectedSong.albumPhotoUrl}`);
+      setAudioPreview(`${selectedSong.audioUrl}`);
+      setImagePreview(`${selectedSong.albumPhotoUrl}`);
     } else {
       setTitle('');
       setArtist('');
