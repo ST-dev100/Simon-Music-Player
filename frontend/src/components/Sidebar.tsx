@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector} from 'react-redux';
 import { FaHome, FaUserFriends, FaPodcast, FaPlus, FaSearch, FaTimes } from 'react-icons/fa';
 import { MdFavorite } from 'react-icons/md';
 import { RootState } from '../store'; // Adjust the path as necessary
-import { setCurrentPlayMusic } from '../features/songs/songsSlice'; // Adjust the path as necessary
+
 
 interface SidebarProps {
   onSearch: (query: string) => void;
@@ -15,7 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onLikedSongsClick }) => {
   const [isSidebarVisible, setSidebarVisible] = useState(false);
   const [activeSection, setActiveSection] = useState<string | null>(null);
 
-  const dispatch = useDispatch();
+  
   const { stats } = useSelector((state: RootState) => state.songs);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchSongsRequest, fetchStatsRequest, setCurrentPlayMusic, deleteSongRequest, setSelectedSong, toggleShowAddSong } from '../features/songs/songsSlice';
+import { fetchSongsRequest, fetchStatsRequest, setCurrentPlayMusic, deleteSongRequest, setSelectedSong } from '../features/songs/songsSlice';
 import { RootState } from '../store';
 import styled from '@emotion/styled';
 import { FaEdit, FaTrash } from 'react-icons/fa'; // Importing icons
@@ -162,9 +162,7 @@ const SongList: React.FC<SongListProps> = ({ searchQuery, showLikedSongs }) => {
   const { songs, stats, loading, error } = useSelector((state: RootState) => state.songs);
   const [viewAll, setViewAll] = useState(false);
   
-  const openAddSongModal = () => {
-    dispatch(toggleShowAddSong());
-  };
+ 
 
   useEffect(() => {
     dispatch(fetchSongsRequest());

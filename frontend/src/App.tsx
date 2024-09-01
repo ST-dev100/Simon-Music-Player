@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from './store';
 import { toggleShowAddSong } from './features/songs/songsSlice';
@@ -15,9 +15,7 @@ function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showLikedSongs, setShowLikedSongs] = useState(false);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
+  
 
   const handleLikedSongsClick = () => {
     setShowLikedSongs((prev) => !prev);

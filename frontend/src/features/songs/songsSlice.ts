@@ -78,32 +78,31 @@ const songsSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
-    addSongRequest(state, action: PayloadAction<FormData>) {
+    addSongRequest(state, _action: PayloadAction<FormData>) {  // Underscore unused action
       state.loading = true;
     },
     addSongSuccess(state, action: PayloadAction<Song>) {
       state.songs.unshift(action.payload);
       state.loading = false;
     },
-    updateSongRequest(state, action: PayloadAction<FormData>) { // Adjusted to FormData
+    updateSongRequest(state, _action: PayloadAction<FormData>) {  // Underscore unused action
       state.loading = true;
     },
     updateSongSuccess(state, action: PayloadAction<Song>) {
-      console.log("id is")
       const index = state.songs.findIndex((song) => song._id === action.payload._id);
       if (index !== -1) {
         state.songs[index] = action.payload;
       }
       state.loading = false;
     },
-    deleteSongRequest(state, action: PayloadAction<string>) {
+    deleteSongRequest(state, _action: PayloadAction<string>) {  // Underscore unused action
       state.loading = true;
     },
     deleteSongSuccess(state, action: PayloadAction<string>) {
       state.songs = state.songs.filter((song) => song._id !== action.payload);
       state.loading = false;
     },
-    toggleFavoriteRequest(state, action: PayloadAction<{ id: string; isFavorite: boolean }>) {
+    toggleFavoriteRequest(state, _action: PayloadAction<{ id: string; isFavorite: boolean }>) {  // Underscore unused action
       state.loading = true;
     },
     toggleFavoriteSuccess(state, action: PayloadAction<Song>) {
@@ -123,15 +122,16 @@ const songsSlice = createSlice({
     toggleShowAddSong(state) {
       state.showAddSong = !state.showAddSong;
       if (!state.showAddSong) {
-        state.selectedSong = null; // Reset selectedSong when closing the form
+        state.selectedSong = null;
       }
     },
     setSelectedSong(state, action: PayloadAction<Song>) {
       state.selectedSong = action.payload;
-      state.showAddSong = true; // Open the add song form
+      state.showAddSong = true;
     },
   },
 });
+
 
 export const {
   fetchSongsRequest,
