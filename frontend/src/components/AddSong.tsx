@@ -133,7 +133,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
 
   return (
     <div className={`fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50 overflow-auto transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0'} transition-transform transform ${isOpen ? 'scale-100' : 'scale-95'}`}>
-      <div className="bg-gradient-to-r border-4 border-red-700 from-indigo-500 dark:bg-gray-900 p-8 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto transition-transform transform scale-100 opacity-100 animate-fade-in">
+      <div className="bg-gradient-to-r border-4  from-indigo-500 dark:bg-gray-900 p-8 rounded-lg shadow-lg w-full max-w-lg relative max-h-screen overflow-auto transition-transform transform scale-100 opacity-100 animate-fade-in">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
@@ -200,7 +200,11 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
               />
               <span className="text-white">Choose Audio</span>
             </label>
-            {audioPreview && <audio controls src={audioPreview} className="mt-2 w-full rounded-lg border border-gray-200 dark:border-gray-600" />}
+            {audioPreview && (
+              <div className="mt-2 p-4 bg-gray-800 rounded-lg border border-gray-700 dark:border-gray-600">
+                <audio controls src={audioPreview} className="w-full" />
+              </div>
+            )}
           </div>
           <button
             type="submit"

@@ -12,16 +12,16 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gray-900 text-white py-2 px-4 flex justify-between items-center col-span-12">
-      <div className="text-green-400 font-bold md:text-xl text-sm">SIMON MUSIC</div>
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={openAddSongModal}
-          className="fixed z-[80] right-0 top-0 flex items-center justify-center p-4 rounded-full bg-green-600 text-white transition-transform duration-300 transform hover:scale-110 hover:shadow-lg"
-        >
-          <MdAdd className="md:text-2xl text-sm" />
-        </button>
+    <header className="bg-gray-900 text-white py-4 px-6 flex justify-between items-center col-span-12">
+      <div className="text-green-400 font-bold text-lg md:text-2xl">
+        SIMON MUSIC
       </div>
+      <button
+        onClick={openAddSongModal}
+        className="flex items-center justify-center p-3 md:p-4 rounded-full bg-green-600 text-white transition-transform duration-300 transform hover:scale-110 hover:shadow-lg focus:outline-none"
+      >
+        <MdAdd className="text-xl md:text-3xl" />
+      </button>
     </header>
   );
 };

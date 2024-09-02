@@ -29,7 +29,7 @@ function App() {
     <div className='grid grid-cols-12 bg-gray-900'>
       <Header />
       <Sidebar onSearch={setSearchQuery} onLikedSongsClick={handleLikedSongsClick}/>
-      <div className={`relative md:col-span-10 col-span-12`}>z
+      <div className={`relative md:col-span-10 col-span-12`}>
         <AddSong isOpen={showAddSong} onClose={closeAddSongModal} selectedSong={selectedSong} /> {/* Pass selectedSong */}
         <SongList searchQuery={searchQuery} showLikedSongs={showLikedSongs}/>
       </div>
