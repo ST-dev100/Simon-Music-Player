@@ -79,21 +79,21 @@ const MusicPlayer: React.FC = () => {
   }, [currentPlayMusic]);
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white flex items-center p-4 space-x-4 z-[35] w-full overflow-auto shadow-lg border-t border-gray-700">
+    <div className="col-span-12 bg-gray-800 text-white flex items-center p-4 space-x-4 z-[35] w-full overflow-auto shadow-lg border-t border-gray-700">
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
-        <FaRandom className="text-xl" />
+        <FaRandom className="md:text-xl text-sm" />
       </button>
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
-        <FaBackward className="text-xl" />
+        <FaBackward className="md:text-xl text-sm" />
       </button>
       <button onClick={togglePlayPause} className="text-white bg-green-500 p-2 rounded-full hover:bg-green-600 transition-colors duration-300">
-        {isPlaying ? <FaPause className="text-2xl" /> : <FaPlay className="text-2xl" />}
+        {isPlaying ? <FaPause className="md:text-2xl text-sm" /> : <FaPlay className="md:text-2xl text-sm" />}
       </button>
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
-        <FaForward className="text-xl" />
+        <FaForward className="md:text-xl text-sm" />
       </button>
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
-        <FaSync className="text-xl" />
+        <FaSync className="md:text-xl text-sm" />
       </button>
 
       <div className="flex items-center space-x-2 flex-grow">
@@ -109,8 +109,8 @@ const MusicPlayer: React.FC = () => {
         <span className="text-sm">{formatTime(duration)}</span>
       </div>
 
-      <button className="text-gray-400 hover:text-white transition-colors duration-300">
-        <FiVolume2 className="text-xl" />
+      <button className="text-gray-400 hover:text-white transition-colors duration-300 md:text-lg text-sm">
+        <FiVolume2 className="md:text-xl text-sm" />
       </button>
 
       {currentPlayMusic && (
@@ -118,18 +118,18 @@ const MusicPlayer: React.FC = () => {
           <img
             src={currentPlayMusic.albumPhotoUrl}
             alt={`${currentPlayMusic.title} Album Cover`}
-            className="w-16 h-16 object-cover rounded-lg shadow-md"
+            className="md:w-16 md:h-16 w-6 h-6 object-cover rounded-full md:rounded-lg shadow-md"
           />
           <div className="flex flex-col">
-            <span className="font-bold text-lg">{currentPlayMusic.title}</span>
-            <span className="text-sm text-gray-400">{currentPlayMusic.artist}</span>
+            <span className="font-bold md:text-lg text-sm">{currentPlayMusic.title}</span>
+            <span className="text-sm md:text-xs text-gray-400">{currentPlayMusic.artist}</span>
           </div>
         </div>
       )}
 
       <button
         onClick={handleToggleFavorite}
-        className={`text-xl ${isFavorite ? 'text-red-500' : 'text-gray-400'} hover:text-red-400 transition-colors duration-300`}
+        className={`text-xl ${isFavorite ? 'text-green-500' : 'text-gray-400'} hover:text-red-400 transition-colors duration-300 md:text-lg text-sm`}
       >
         <FaHeart />
       </button>

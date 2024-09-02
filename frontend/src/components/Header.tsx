@@ -18,9 +18,9 @@ const Header: React.FC = () => {
       </div>
       <button
         onClick={openAddSongModal}
-        className="flex items-center justify-center p-3 md:p-4 rounded-full bg-green-600 text-white transition-transform duration-300 transform hover:scale-110 hover:shadow-lg focus:outline-none"
+        className="fixed right-0 z-50 flex items-center justify-center p-3 md:p-4 rounded-full bg-green-600 text-white transition-transform duration-300 transform hover:scale-110 hover:shadow-lg focus:outline-none"
       >
-        <MdAdd className="text-xl md:text-3xl" />
+        <MdAdd className="text-lg md:text-3xl" />
       </button>
     </header>
   );
