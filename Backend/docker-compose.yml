@@ -1,0 +1,22 @@
+version: '3'
+services:
+  # MongoDB service
+  addis_mongo_db:
+    container_name: Addis-backend-container
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_db:/data/db
+
+  # Node.js service
+  api:
+    build: .
+    ports:
+      - 4200:4200
+    environment:
+      - MONGO_URI=mongodb://Addis_mongo_db:27017
+    depends_on:
+      - addis_mongo_db
+
+volumes:
+  mongo_db:  # This should match the volume used in the MongoDB service

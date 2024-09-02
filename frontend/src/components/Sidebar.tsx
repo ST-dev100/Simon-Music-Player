@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onLikedSongsClick }) => {
     <>
       {/* Sidebar */}
       <div
-        className={`bg-gray-900 text-gray-300 h-full fixed top-0 left-0 transition-transform duration-300 ease-in-out ${
+        className={`bg-gray-900 text-gray-300  border-white fixed top-0 left-0 transition-transform duration-300 ease-in-out ${
           isSidebarVisible ? 'translate-x-0' : '-translate-x-full'
         } col-span-2  z-30 md:relative md:translate-x-0`}
       >
@@ -80,7 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onLikedSongsClick }) => {
         </nav>
 
         {/* Playlist */}
-        <div className="mt-6 px-4">
+        <div className="mt-6 px-4 overflow-auto">
           <div className="flex items-center justify-between text-sm mb-2">
             <span>Playlist</span>
             <FaPlus className="cursor-pointer text-green-500" size={20} />
@@ -97,7 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onLikedSongsClick }) => {
         </div>
 
         {/* Artists */}
-        <div className="mt-6 px-4">
+        <div className="mt-6 px-4 overflow-auto">
           <div
             className="flex items-center justify-between text-sm mb-2 cursor-pointer"
             onClick={() => toggleSection('artists')}
@@ -120,7 +120,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onSearch, onLikedSongsClick }) => {
         </div>
 
         {/* Albums */}
-        <div className="mt-6 px-4">
+        <div className="mt-6 px-4 overflow-auto">
           <div
             className="flex items-center justify-between text-sm mb-2 cursor-pointer"
             onClick={() => toggleSection('albums')}
