@@ -6,7 +6,7 @@ interface Song {
   artist: string;
   audioUrl: string;
   genre: string;
-  album:string;
+  album: string;
   albumPhotoUrl: string;
   createdAt: string;
   isFavorite?: boolean;
@@ -39,7 +39,7 @@ interface SongsState {
   error: string | null;
   currentPlayMusic: Song | null;
   showAddSong: boolean;
-  selectedSong: Song | null; // Added selectedSong state
+  selectedSong: Song | null;
 }
 
 const initialState: SongsState = {
@@ -49,7 +49,7 @@ const initialState: SongsState = {
   error: null,
   currentPlayMusic: null,
   showAddSong: false,
-  selectedSong: null, // Initialize selectedSong as null
+  selectedSong: null,
 };
 
 const songsSlice = createSlice({
@@ -78,14 +78,14 @@ const songsSlice = createSlice({
       state.error = action.payload;
       state.loading = false;
     },
-    addSongRequest(state, _action: PayloadAction<FormData>) {  // Underscore unused action
+    addSongRequest(state, _action: PayloadAction<Song>) { // Change FormData to Song
       state.loading = true;
     },
     addSongSuccess(state, action: PayloadAction<Song>) {
       state.songs.unshift(action.payload);
       state.loading = false;
     },
-    updateSongRequest(state, _action: PayloadAction<FormData>) {  // Underscore unused action
+    updateSongRequest(state, _action: PayloadAction<Song>) { // Change FormData to Song
       state.loading = true;
     },
     updateSongSuccess(state, action: PayloadAction<Song>) {
@@ -95,14 +95,14 @@ const songsSlice = createSlice({
       }
       state.loading = false;
     },
-    deleteSongRequest(state, _action: PayloadAction<string>) {  // Underscore unused action
+    deleteSongRequest(state, _action: PayloadAction<string>) {
       state.loading = true;
     },
     deleteSongSuccess(state, action: PayloadAction<string>) {
       state.songs = state.songs.filter((song) => song._id !== action.payload);
       state.loading = false;
     },
-    toggleFavoriteRequest(state, _action: PayloadAction<{ id: string; isFavorite: boolean }>) {  // Underscore unused action
+    toggleFavoriteRequest(state, _action: PayloadAction<{ id: string; isFavorite: boolean }>) {
       state.loading = true;
     },
     toggleFavoriteSuccess(state, action: PayloadAction<Song>) {
@@ -132,7 +132,6 @@ const songsSlice = createSlice({
   },
 });
 
-
 export const {
   fetchSongsRequest,
   fetchSongsSuccess,
@@ -151,7 +150,7 @@ export const {
   failure,
   setCurrentPlayMusic,
   toggleShowAddSong,
-  setSelectedSong, // Export setSelectedSong action
+  setSelectedSong,
 } = songsSlice.actions;
 
 export default songsSlice.reducer;

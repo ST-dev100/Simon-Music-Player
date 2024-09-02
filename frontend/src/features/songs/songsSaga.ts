@@ -23,11 +23,13 @@ interface Song {
   title: string;
   artist: string;
   audioUrl: string;
-  album: string;
   genre: string;
+  album: string;
   albumPhotoUrl: string;
   createdAt: string;
+  isFavorite?: boolean;
 }
+
 interface GenreStat {
   _id: string;
   count: number;
@@ -97,10 +99,10 @@ function* addSong(
   action: ReturnType<typeof addSongRequest>
 ): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, AxiosResponse<AddSongResponse>> {
   try {
-    const formData = action.payload as FormData;
-    const response: AxiosResponse<AddSongResponse> = yield call(axios.post, `${API_BASE_URL}/api/songs`, formData, {
+    const songData = action.payload; // Expect Song JSON
+    const response: AxiosResponse<AddSongResponse> = yield call(axios.post, `${API_BASE_URL}/api/songs`, songData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json', // Set to application/json for JSON payload
       },
     });
     yield put(addSongSuccess(response.data));
@@ -120,16 +122,16 @@ function* updateSong(
   action: ReturnType<typeof updateSongRequest>
 ): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, AxiosResponse<UpdateSongResponse>> {
   try {
-    const formData = action.payload; // Expect FormData
-    const id = formData.get('_id') as string | null;
+    const songData = action.payload; // Expect Song JSON
+    const id = songData._id;
 
     if (!id) {
       throw new Error('Song ID is missing');
     }
 
-    const response: AxiosResponse<UpdateSongResponse> = yield call(axios.put, `${API_BASE_URL}/api/songs/${id}`, formData, {
+    const response: AxiosResponse<UpdateSongResponse> = yield call(axios.put, `${API_BASE_URL}/api/songs/${id}`, songData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'application/json', // Set to application/json for JSON payload
       },
     });
 
@@ -166,11 +168,15 @@ function* deleteSong(
 
 function* toggleFavorite(
   action: ReturnType<typeof toggleFavoriteRequest>
-): Generator<any, void, AxiosResponse<Song>> {
+): Generator<CallEffect | PutEffect<{ type: string; payload: any }>, void, AxiosResponse<Song>> {
   try {
     const { id, isFavorite } = action.payload;
     const response: AxiosResponse<Song> = yield call(axios.patch, `${API_BASE_URL}/api/songs/favorite/${id}`, {
       isFavorite,
+    }, {
+      headers: {
+        'Content-Type': 'application/json', // Set to application/json for JSON payload
+      },
     });
     yield put(toggleFavoriteSuccess(response.data));
     yield put(fetchStatsRequest()); // Trigger stats update after toggling favorite

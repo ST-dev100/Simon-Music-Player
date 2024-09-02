@@ -1,39 +1,5 @@
-const path = require('path');
-const multer = require('multer');
 const cloudinary = require('../config/config')
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const fs = require('fs');
 const Song = require('../models/Song');
-
-// Configure Cloudinary storage
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: async (req, file) => {
-        let folderName;
-        let resourceType;
-
-        // Determine the folder and resource type based on the file fieldname
-        if (file.fieldname === 'audioFile') {
-            folderName = 'audioFiles';
-            resourceType = 'video'; // Use 'video' resource type for audio files in Cloudinary
-        } else if (file.fieldname === 'imageFile') {
-            folderName = 'albumPhotos';
-            resourceType = 'image';
-        } else {
-            throw new Error('Invalid field name');
-        }
-
-        // Construct file name and set parameters
-        return {
-            folder: folderName,
-            public_id: `${file.originalname.split('.')[0]}-${new Date().toISOString().split('T')[0]}`,
-            resource_type: resourceType,
-        };
-    },
-});
-
-// Create multer instance with Cloudinary storage
-const upload = multer({ storage: storage });
 
 // @desc Get all songs
 // @route GET /api/songs
@@ -51,15 +17,8 @@ const getSongs = async (req, res) => {
 // @route PUT /api/songs/:id
 // @access Public
 const updateSong = async (req, res) => {
-    upload.fields([{ name: 'imageFile' }, { name: 'audioFile' }])(req, res, async function (err) {
-        if (err instanceof multer.MulterError) {
-            return res.status(400).json({ message: err.message });
-        } else if (err) {
-            return res.status(400).json({ message: err });
-        }
-
         const { id } = req.params;
-        const { title, artist, album, genre } = req.body;
+        const { title, artist, album, genre,audioUrl,albumPhotoUrl} = req.body;
 
         try {
             const song = await Song.findById(id);
@@ -73,25 +32,14 @@ const updateSong = async (req, res) => {
             song.album = album || song.album;
             song.genre = genre || song.genre;
             song.createdAt = new Date(); // Update the timestamp
-
-            // Handle image file replacement if a new one is uploaded
-            if (req.files && req.files.imageFile) {
-                const imageFile = req.files.imageFile[0];
-                song.albumPhotoUrl = imageFile.path; // Update Cloudinary URL
-            }
-
-            // Handle audio file replacement if a new one is uploaded
-            if (req.files && req.files.audioFile) {
-                const audioFile = req.files.audioFile[0];
-                song.audioUrl = audioFile.path; // Update Cloudinary URL
-            }
-
+            song.audioUrl = audioUrl || song.audioUrl;
+            song.albumPhotoUrl = albumPhotoUrl || song.albumPhotoUrl;
             await song.save(); // Save the updated song
             res.status(200).json(song);
         } catch (error) {
             res.status(500).json({ message: 'Server Error', error: error.message });
         }
-    });
+   
 };
 
 // @desc Delete a song
@@ -130,28 +78,10 @@ const deleteSong = async (req, res) => {
 // @route POST /api/songs
 // @access Public
 const addSong = async (req, res) => {
-    upload.fields([{ name: 'imageFile' }, { name: 'audioFile' }])(req, res, async function (err) {
-        if (err instanceof multer.MulterError) {
-            return res.status(400).json({ message: err.message });
-        } else if (err) {
-            return res.status(400).json({ message: err });
-        }
+    
+        console.log("body",req.body)
 
-        const { title, artist, album, genre } = req.body;
-
-        if (!req.files) { 
-            return res.status(400).json({ message: 'Please upload an audio file'  });
-        }
-
-        const audioFile = req.files.audioFile[0];
-        const audioUrl = audioFile.path; // Cloudinary URL for the uploaded audio file
-        let albumPhotoUrl = '';
-
-        if (req.files.imageFile) {
-            const imageFile = req.files.imageFile[0];
-            albumPhotoUrl = imageFile.path; // Cloudinary URL for the uploaded image file
-        }
-
+        const { title, artist, album, genre,audioUrl,albumPhotoUrl} = req.body;
         try {
             const song = new Song({
                 title,
@@ -167,7 +97,7 @@ const addSong = async (req, res) => {
         } catch (error) {
             res.status(500).json({ message: 'Server Error', error: error.message });
         }
-    });
+   
 };
 
 // @desc Get statistics about songs

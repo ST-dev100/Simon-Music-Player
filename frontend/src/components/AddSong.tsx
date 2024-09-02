@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { addSongRequest, updateSongRequest } from '../features/songs/songsSlice';
+import { uploadAudioToCloudinary, uploadImageToCloudinary } from '../utils/cloudinary';
 import { FaTimes } from 'react-icons/fa';
 
 interface Song {
@@ -86,33 +87,45 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!title || !artist ) {
+  
+    if (!title || !artist) {
       alert('Please fill out all required fields and upload an audio file.');
       return;
     }
-
-    const formData = new FormData();
-    formData.append('title', title);
-    formData.append('artist', artist);
-    formData.append('album', album);
-    formData.append('genre', genre);
+  
+    let imageUrl = imagePreview || ''; // Default to preview URL if exists
+    let audioUrl = audioPreview || ''; // Default to preview URL if exists
+  
+    // Upload to Cloudinary if there's a new image file
     if (imageFile) {
-      formData.append('imageFile', imageFile);
+      imageUrl = await uploadImageToCloudinary(imageFile);
+      console.log("uploaded image url is", imageUrl);
     }
+  
+    // Upload to Cloudinary if there's a new audio file
     if (audioFile) {
-      formData.append('audioFile', audioFile);
+      audioUrl = await uploadAudioToCloudinary(audioFile);
     }
-
+  
+    const songData = {
+      title,
+      artist,
+      album,
+      genre,
+      albumPhotoUrl: imageUrl,
+      audioUrl,
+      createdAt: new Date().toISOString(),
+      _id:"k"
+    };
+  
     if (selectedSong) {
-      formData.append('_id', selectedSong._id);
-      dispatch(updateSongRequest(formData));
+      dispatch(updateSongRequest({ ...songData, _id: selectedSong._id }));
     } else {
-      dispatch(addSongRequest(formData));
+      dispatch(addSongRequest(songData));
     }
-
+  
     onClose();
   };
 
