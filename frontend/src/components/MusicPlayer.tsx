@@ -3,18 +3,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '../store'; // Adjust the path as necessary
 import { FaPlay, FaPause, FaBackward, FaForward, FaRandom, FaSync, FaHeart } from 'react-icons/fa';
 import { FiVolume2 } from 'react-icons/fi';
-import { toggleFavoriteRequest } from '../features/songs/songsSlice'; // Import the action
+import { toggleFavoriteRequest, setCurrentPlayMusic } from '../features/songs/songsSlice'; // Import the actions
 
 const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false); // Ensure isFavorite is always a boolean
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useDispatch();
 
-  // Get the current playing song from the Redux store
+  // Get the current playing song and the full list of songs from the Redux store
   const currentPlayMusic = useSelector((state: RootState) => state.songs.currentPlayMusic);
+  const songs = useSelector((state: RootState) => state.songs.songs);
 
   // Toggle play/pause state
   const togglePlayPause = () => {
@@ -35,6 +36,7 @@ const MusicPlayer: React.FC = () => {
       const dur = audioRef.current.duration;
       setCurrentTime(current);
       setDuration(dur);
+      
     }
   };
 
@@ -62,19 +64,37 @@ const MusicPlayer: React.FC = () => {
       setIsFavorite(newFavoriteStatus);
       dispatch(toggleFavoriteRequest({
         id: currentPlayMusic._id,
-        isFavorite: newFavoriteStatus
+        isFavorite: newFavoriteStatus,
       }));
+    }
+  };
+
+  // Play the next song in the list
+  const handleNextSong = () => {
+    if (currentPlayMusic && songs.length > 0) {
+      const currentIndex = songs.findIndex(song => song._id === currentPlayMusic._id);
+      const nextIndex = (currentIndex + 1) % songs.length;
+      dispatch(setCurrentPlayMusic(songs[nextIndex]));
+    }
+  };
+
+  // Play the previous song in the list
+  const handlePreviousSong = () => {
+    if (currentPlayMusic && songs.length > 0) {
+      const currentIndex = songs.findIndex(song => song._id === currentPlayMusic._id);
+      const previousIndex = (currentIndex - 1 + songs.length) % songs.length;
+      dispatch(setCurrentPlayMusic(songs[previousIndex]));
     }
   };
 
   useEffect(() => {
     // Reset player state when song changes
-    setIsPlaying(false);
     setCurrentTime(0);
-
+    
     // Update local favorite status
     if (currentPlayMusic) {
-      setIsFavorite(currentPlayMusic.isFavorite ?? false); // Default to false if isFavorite is undefined
+      setIsPlaying(true);
+      setIsFavorite(currentPlayMusic.isFavorite ?? false);
     }
   }, [currentPlayMusic]);
 
@@ -83,13 +103,13 @@ const MusicPlayer: React.FC = () => {
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
         <FaRandom className="md:text-xl text-sm" />
       </button>
-      <button className="text-gray-400 hover:text-white transition-colors duration-300">
+      <button onClick={handlePreviousSong} className="text-gray-400 hover:text-white transition-colors duration-300">
         <FaBackward className="md:text-xl text-sm" />
       </button>
       <button onClick={togglePlayPause} className="text-white bg-green-500 p-2 rounded-full hover:bg-green-600 transition-colors duration-300">
-        {isPlaying ? <FaPause className="md:text-2xl text-sm" /> : <FaPlay className="md:text-2xl text-sm" />}
+        {isPlaying ? <FaPause className="md:text-2xl text-sm" /> : <FaPlay className="md:text-2xl text-sm" /> }
       </button>
-      <button className="text-gray-400 hover:text-white transition-colors duration-300">
+      <button onClick={handleNextSong} className="text-gray-400 hover:text-white transition-colors duration-300">
         <FaForward className="md:text-xl text-sm" />
       </button>
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
@@ -139,6 +159,7 @@ const MusicPlayer: React.FC = () => {
           ref={audioRef}
           src={currentPlayMusic.audioUrl}
           onTimeUpdate={handleTimeUpdate}
+          autoPlay={true}
         />
       )}
     </div>

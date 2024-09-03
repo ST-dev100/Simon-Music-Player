@@ -119,6 +119,22 @@ const songsSlice = createSlice({
     setCurrentPlayMusic(state, action: PayloadAction<Song>) {
       state.currentPlayMusic = action.payload;
     },
+    playNextSong(state) {
+      if (state.currentPlayMusic) {
+        const currentIndex = state.songs.findIndex(song => song._id === state.currentPlayMusic!._id);
+        if (currentIndex !== -1 && currentIndex < state.songs.length - 1) {
+          state.currentPlayMusic = state.songs[currentIndex + 1];
+        }
+      }
+    },
+    playPreviousSong(state) {
+      if (state.currentPlayMusic) {
+        const currentIndex = state.songs.findIndex(song => song._id === state.currentPlayMusic!._id);
+        if (currentIndex > 0) {
+          state.currentPlayMusic = state.songs[currentIndex - 1];
+        }
+      }
+    },
     toggleShowAddSong(state) {
       state.showAddSong = !state.showAddSong;
       if (!state.showAddSong) {
@@ -148,6 +164,8 @@ export const {
   toggleFavoriteRequest,
   toggleFavoriteSuccess,
   failure,
+  playNextSong,
+  playPreviousSong,
   setCurrentPlayMusic,
   toggleShowAddSong,
   setSelectedSong,
