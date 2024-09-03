@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { addSongRequest, updateSongRequest } from '../features/songs/songsSlice';
 import { uploadAudioToCloudinary, uploadImageToCloudinary } from '../utils/cloudinary';
 import { FaTimes } from 'react-icons/fa';
+import { FaSpinner } from 'react-icons/fa';
 
 interface Song {
   _id: string;
@@ -31,6 +32,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [audioPreview, setAudioPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false); // Loading state
 
   const dispatch = useDispatch();
 
@@ -89,26 +91,25 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+    setLoading(true); // Set loading to true
+
     if (!title || !artist) {
       alert('Please fill out all required fields and upload an audio file.');
+      setLoading(false); // Set loading to false if validation fails
       return;
     }
-  
-    let imageUrl = imagePreview || ''; // Default to preview URL if exists
-    let audioUrl = audioPreview || ''; // Default to preview URL if exists
-  
-    // Upload to Cloudinary if there's a new image file
+
+    let imageUrl = imagePreview || '';
+    let audioUrl = audioPreview || '';
+
     if (imageFile) {
       imageUrl = await uploadImageToCloudinary(imageFile);
-      console.log("uploaded image url is", imageUrl);
     }
-  
-    // Upload to Cloudinary if there's a new audio file
+
     if (audioFile) {
       audioUrl = await uploadAudioToCloudinary(audioFile);
     }
-  
+
     const songData = {
       title,
       artist,
@@ -117,16 +118,19 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
       albumPhotoUrl: imageUrl,
       audioUrl,
       createdAt: new Date().toISOString(),
-      _id:"k"
+      _id: selectedSong ? selectedSong._id : "k",
     };
-  
-    if (selectedSong) {
-      dispatch(updateSongRequest({ ...songData, _id: selectedSong._id }));
-    } else {
-      dispatch(addSongRequest(songData));
+
+    try {
+      if (selectedSong) {
+        await dispatch(updateSongRequest({ ...songData, _id: selectedSong._id }));
+      } else {
+        await dispatch(addSongRequest(songData));
+      }
+      onClose();
+    } finally {
+      setLoading(false); // Set loading to false after submission
     }
-  
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -152,6 +156,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
               placeholder="Song Title"
               className="w-full p-4 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 transition-shadow shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500"
               required
+              disabled={loading}
             />
             <input
               type="text"
@@ -160,6 +165,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
               placeholder="Artist"
               className="w-full p-4 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 transition-shadow shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500"
               required
+              disabled={loading}
             />
             <input
               type="text"
@@ -167,6 +173,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
               onChange={(e) => setAlbum(e.target.value)}
               placeholder="Album"
               className="w-full p-4 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 transition-shadow shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
             />
             <input
               type="text"
@@ -174,6 +181,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
               onChange={(e) => setGenre(e.target.value)}
               placeholder="Genre"
               className="w-full p-4 border border-gray-300 rounded-lg dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 transition-shadow shadow-sm focus:shadow-md focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
             />
           </div>
           <div className="space-y-4">
@@ -184,6 +192,7 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
                 accept="image/*"
                 onChange={handleImageChange}
                 className="hidden"
+                disabled={loading}
               />
               <span className="text-white">Choose Image</span>
             </label>
@@ -197,20 +206,26 @@ const AddSong: React.FC<AddSongProps> = ({ isOpen, onClose, selectedSong }) => {
                 accept="audio/*"
                 onChange={handleAudioChange}
                 className="hidden"
+                disabled={loading}
               />
               <span className="text-white">Choose Audio</span>
             </label>
             {audioPreview && (
-              <div className="mt-2 p-4 bg-gray-800 rounded-lg border border-gray-700 dark:border-gray-600">
-                <audio controls src={audioPreview} className="w-full" />
+              <div className="mt-2 p-4 bg-gray-800 rounded-lg border border-gray-700">
+                <audio controls src={audioPreview} className="w-full"></audio>
               </div>
             )}
           </div>
           <button
             type="submit"
-            className="w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-blue-700 dark:hover:bg-blue-800 dark:focus:ring-blue-600 transition-colors"
+            className="w-full flex items-center justify-center p-4 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 text-white font-semibold rounded-lg transition-colors hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600"
+            disabled={loading}
           >
-            {selectedSong ? 'Update Song' : 'Add Song'}
+            {loading ? (
+              <FaSpinner className="animate-spin mr-2" />
+            ) : (
+              selectedSong ? 'Update Song' : 'Add Song'
+            )}
           </button>
         </form>
       </div>
