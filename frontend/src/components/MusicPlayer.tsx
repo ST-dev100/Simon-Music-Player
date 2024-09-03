@@ -108,7 +108,7 @@ const MusicPlayer: React.FC = () => {
   }, [volume]);
 
   return (
-    <div className="col-span-12 bg-gray-800 text-white flex items-center p-4 space-x-4 z-[35] w-full overflow-auto shadow-lg border-t border-gray-700">
+    <div className="col-span-12 bg-gray-800 text-white flex items-center p-4 space-x-4  w-full overflow-auto shadow-lg border-t border-gray-700">
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
         <FaRandom className="md:text-xl text-sm" />
       </button>

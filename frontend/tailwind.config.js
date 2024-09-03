@@ -8,6 +8,7 @@ export default {
     extend: {
       backgroundImage: {
         'hero': "url('/public/music.jpg')",
+        'pre':"url('/public/preloader.jpg')"
       }
     },
   },
