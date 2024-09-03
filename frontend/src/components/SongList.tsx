@@ -341,7 +341,7 @@ const SongList: React.FC<SongListProps> = ({ searchQuery, showLikedSongs }) => {
       )}
 
       <MostPlayedSection>
-        <SectionTitle>{showLikedSongs ? 'Liked Songs' : 'Most Played'}</SectionTitle>
+        <SectionTitle>{showLikedSongs ? 'Liked Songs' : 'Songs'}</SectionTitle>
         <ViewAll onClick={toggleViewAll}>
           {viewAll ? 'View less' : 'View all'}
         </ViewAll>

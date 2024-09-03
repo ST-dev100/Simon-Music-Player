@@ -33,7 +33,9 @@ function App() {
         <AddSong isOpen={showAddSong} onClose={closeAddSongModal} selectedSong={selectedSong} /> {/* Pass selectedSong */}
         <SongList searchQuery={searchQuery} showLikedSongs={showLikedSongs}/>
       </div>
-      <MusicPlayer />
+      <div className="col-span-12 sticky bottom-0 z-50">
+        <MusicPlayer />
+      </div>
     </div>
   );
 }

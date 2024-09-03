@@ -138,7 +138,7 @@ const MusicPlayer: React.FC = () => {
         <span className="text-sm">{formatTime(duration)}</span>
       </div>
 
-      <div className="relative">
+      <div className="relative flex">
         <button
           className="text-gray-400 hover:text-white transition-colors duration-300 md:text-lg text-sm"
           onClick={() => setIsVolumeVisible(!isVolumeVisible)} // Toggle volume slider visibility
@@ -146,15 +146,17 @@ const MusicPlayer: React.FC = () => {
           <FiVolume2 className="md:text-xl text-sm" />
         </button>
         {isVolumeVisible && (
-          <input
-            type="range"
-            min="0"
-            max="1"
-            step="0.01"
-            value={volume}
-            onChange={(e) => setVolume(Number(e.target.value))}
-            className="absolute left-0 bottom-10 md:w-24 w-10 accent-green-500"
-          />
+          <span className='relative flex '>
+              <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value={volume}
+              onChange={(e) => setVolume(Number(e.target.value))}
+              className=" md:w-24 w-10 accent-green-500"
+            />
+          </span>
         )}
       </div>
 
@@ -163,7 +165,7 @@ const MusicPlayer: React.FC = () => {
           <img
             src={currentPlayMusic.albumPhotoUrl}
             alt={`${currentPlayMusic.title} Album Cover`}
-            className="md:w-16 md:h-16 w-6 h-6 object-cover rounded-full md:rounded-lg shadow-md"
+            className="md:w-10 md:h-10 hidden md:flex object-cover rounded-full md:rounded-lg shadow-md"
           />
           <div className="flex flex-col">
             <span className="font-bold md:text-lg text-sm">{currentPlayMusic.title}</span>
