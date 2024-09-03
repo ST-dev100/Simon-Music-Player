@@ -10,6 +10,8 @@ const MusicPlayer: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<number>(0);
   const [duration, setDuration] = useState<number>(0);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+  const [volume, setVolume] = useState<number>(0.5); // Default volume at 50%
+  const [isVolumeVisible, setIsVolumeVisible] = useState<boolean>(false); // Control visibility of volume slider
   const audioRef = useRef<HTMLAudioElement>(null);
   const dispatch = useDispatch();
 
@@ -98,6 +100,13 @@ const MusicPlayer: React.FC = () => {
     }
   }, [currentPlayMusic]);
 
+  useEffect(() => {
+    // Set audio volume when volume state changes
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
   return (
     <div className="col-span-12 bg-gray-800 text-white flex items-center p-4 space-x-4 z-[35] w-full overflow-auto shadow-lg border-t border-gray-700">
       <button className="text-gray-400 hover:text-white transition-colors duration-300">
@@ -129,9 +138,25 @@ const MusicPlayer: React.FC = () => {
         <span className="text-sm">{formatTime(duration)}</span>
       </div>
 
-      <button className="text-gray-400 hover:text-white transition-colors duration-300 md:text-lg text-sm">
-        <FiVolume2 className="md:text-xl text-sm" />
-      </button>
+      <div className="relative">
+        <button
+          className="text-gray-400 hover:text-white transition-colors duration-300 md:text-lg text-sm"
+          onClick={() => setIsVolumeVisible(!isVolumeVisible)} // Toggle volume slider visibility
+        >
+          <FiVolume2 className="md:text-xl text-sm" />
+        </button>
+        {isVolumeVisible && (
+          <input
+            type="range"
+            min="0"
+            max="1"
+            step="0.01"
+            value={volume}
+            onChange={(e) => setVolume(Number(e.target.value))}
+            className="absolute left-0 bottom-10 md:w-24 w-10 accent-green-500"
+          />
+        )}
+      </div>
 
       {currentPlayMusic && (
         <div className="flex items-center space-x-4">
@@ -149,7 +174,7 @@ const MusicPlayer: React.FC = () => {
 
       <button
         onClick={handleToggleFavorite}
-        className={`text-xl ${isFavorite ? 'text-green-500' : 'text-gray-400'} hover:text-red-400 transition-colors duration-300 md:text-lg text-sm`}
+        className={`text-xl ${isFavorite ? 'text-green-500' : 'text-gray-400'} hover:text-green-400 transition-colors duration-300 md:text-lg text-sm`}
       >
         <FaHeart />
       </button>
@@ -160,6 +185,7 @@ const MusicPlayer: React.FC = () => {
           src={currentPlayMusic.audioUrl}
           onTimeUpdate={handleTimeUpdate}
           autoPlay={true}
+          onEnded={handleNextSong} // Automatically play the next song when the current one ends
         />
       )}
     </div>
